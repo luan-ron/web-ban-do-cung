@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Giỏ hàng</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <h1>🛒 Giỏ hàng của bạn</h1>
+
+    <div id="cart"></div>
+    <h3 id="total"></h3>
+
+    <!-- ====== THÔNG TIN KHÁCH HÀNG ====== -->
+    <div class="customer-info">
+        <h3>📋 Thông tin khách hàng</h3>
+
+        <input id="tenKhach" type="text" placeholder="Họ và tên">
+        <input id="sdtKhach" type="text" placeholder="Số điện thoại">
+        <input id="diaChi" type="text" placeholder="Địa chỉ giao hàng">
+        <textarea id="ghiChu" placeholder="Ghi chú (giờ giao, loại cúng...)"></textarea>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <button class="zalo-btn" onclick="datHangZalo()">📲 Đặt hàng qua Zalo</button>
+        <br><br>
+        <button onclick="clearCart()">❌ Xóa giỏ hàng</button>
+        <br><br>
+        <a href="index.html">⬅ Quay lại mua hàng</a>
+    </div>
+
+    <script>
+        // ====== LẤY GIỎ HÀNG ======
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        const cartDiv = document.getElementById("cart");
+        const totalDiv = document.getElementById("total");
+
+        // ====== HIỂN THỊ GIỎ HÀNG ======
+        function renderCart() {
+            if (cart.length === 0) {
+                cartDiv.innerHTML = "<p>Giỏ hàng đang trống.</p>";
+                totalDiv.innerText = "";
+                return;
+            }
+
+            let total = 0;
+            let html = "<ul>";
+
+            cart.forEach((item, index) => {
+                let itemTotal = item.gia * item.qty;
+                total += itemTotal;
+
+                html += `
+                    <li class="cart-item">
+                        <div>
+                            <b>${item.ten}</b><br>
+                            ${item.gia}đ × ${item.qty} =
+                            <span class="item-total">${itemTotal}đ</span>
+                        </div>
+
+                        <div class="qty-box">
+                            <button onclick="giam(${index})">➖</button>
+                            <span class="qty">${item.qty}</span>
+                            <button onclick="tang(${index})">➕</button>
+                            <button class="remove-btn" onclick="removeItem(${index})">❌</button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            html += "</ul>";
+            cartDiv.innerHTML = html;
+            totalDiv.innerText = "Tổng tiền: " + total + "đ";
+        }
+
+        // ====== TĂNG / GIẢM ======
+        function tang(index) {
+            cart[index].qty += 1;
+            saveCart();
+        }
+
+        function giam(index) {
+            cart[index].qty -= 1;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            saveCart();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            saveCart();
+        }
+
+        function clearCart() {
+            localStorage.removeItem("cart");
+            location.reload();
+        }
+
+        function saveCart() {
+            localStorage.setItem("cart", JSON.stringify(cart));
+            renderCart();
+        }
+
+        // ====== ĐẶT HÀNG QUA ZALO (NGÀY 12) ======
+        function datHangZalo() {
+            if (cart.length === 0) {
+                alert("Giỏ hàng đang trống!");
+                return;
+            }
+
+            let tenKhach = document.getElementById("tenKhach").value;
+            let sdtKhach = document.getElementById("sdtKhach").value;
+            let diaChi = document.getElementById("diaChi").value;
+            let ghiChu = document.getElementById("ghiChu").value;
+
+            if (!tenKhach || !sdtKhach || !diaChi) {
+                alert("Vui lòng nhập đầy đủ tên, số điện thoại và địa chỉ!");
+                return;
+            }
+
+            let message = "🕯️ ĐƠN ĐỒ CÚNG MỚI\n";
+            message += "👤 Tên: " + tenKhach + "\n";
+            message += "📞 SĐT: " + sdtKhach + "\n";
+            message += "📍 Địa chỉ: " + diaChi + "\n";
+
+            if (ghiChu) {
+                message += "📝 Ghi chú: " + ghiChu + "\n";
+            }
+
+            message += "\n📦 Sản phẩm:\n";
+
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                let itemTotal = item.gia * item.qty;
+                message += `${index + 1}. ${item.ten} - ${item.gia}đ x ${item.qty} = ${itemTotal}đ\n`;
+                total += itemTotal;
+            });
+
+            message += `\n💰 Tổng tiền: ${total}đ`;
+
+            // 🔴 SỐ ZALO CỦA BẠN (ĐÃ ĐÚNG FORMAT)
+            let phone = "84933188074";
+
+            window.open(`https://zalo.me/${phone}`, "_blank");
+            navigator.clipboard.writeText(message);
+
+            alert("✅ Đã mở Zalo & copy nội dung đơn hàng.\n👉 Dán vào chat để gửi nhé!");
+        }
+
+        renderCart();
+    </script>
+
+</body>
+</html>
