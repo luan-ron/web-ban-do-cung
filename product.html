@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết sản phẩm</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h1 id="tenSanPham"></h1>
+
+<div class="product-detail">
+    <img id="hinhSanPham" src="" alt="">
+    <div>
+        <p id="giaSanPham"></p>
+
+        <p>
+            Sản phẩm đồ cúng chất lượng cao, phù hợp cho thờ cúng gia tiên,
+            giao hàng nhanh tại Long Sơn.
+        </p>
+
+        <button onclick="themVaoGio()">🛒 Thêm vào giỏ hàng</button>
+        <br><br>
+        <a href="index.html">⬅ Quay lại mua hàng</a>
+    </div>
+</div>
+
+<script>
+// ====== LẤY DỮ LIỆU TỪ URL ======
+const params = new URLSearchParams(window.location.search);
+
+const ten = params.get("ten");
+const gia = Number(params.get("gia"));
+const img = params.get("img");
+
+// ====== KIỂM TRA DỮ LIỆU ======
+if (!ten || !gia || !img) {
+    alert("Thiếu thông tin sản phẩm!");
+    window.location.href = "index.html";
+}
+
+// ====== HIỂN THỊ RA GIAO DIỆN ======
+document.getElementById("tenSanPham").innerText = ten;
+document.getElementById("giaSanPham").innerText = "Giá: " + gia + "đ";
+document.getElementById("hinhSanPham").src = "images/" + img;
+
+// ====== THÊM VÀO GIỎ HÀNG (CÓ QTY) ======
+function themVaoGio() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // nếu sản phẩm đã có thì tăng số lượng
+    let found = cart.find(item => item.ten === ten);
+
+    if (found) {
+        found.qty += 1;
+    } else {
+        cart.push({
+            ten: ten,
+            gia: gia,
+            qty: 1
+        });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+
+    alert(
+        "Đã thêm vào giỏ hàng!\n\n" +
+        "Bạn sẽ được chuyển sang giỏ hàng để đặt qua Zalo."
+    );
+
+    window.location.href = "cart.html";
+}
+</script>
+
+</body>
+</html>

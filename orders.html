@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử đơn hàng</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>📦 Lịch sử đơn hàng</h1>
+
+<div style="text-align:center; margin-bottom:20px;">
+    <button onclick="clearAllOrders()">🧹 Xóa tất cả đơn hàng</button>
+</div>
+
+<div id="orders"></div>
+
+<div style="text-align:center; margin-top:30px;">
+    <a href="index.html">⬅ Quay về trang chủ</a>
+</div>
+
+<script>
+function formatMoney(num) {
+    return num.toLocaleString("vi-VN") + "đ";
+}
+
+let orders = JSON.parse(localStorage.getItem("orders")) || [];
+let ordersDiv = document.getElementById("orders");
+
+/* ====== CẬP NHẬT TRẠNG THÁI ====== */
+function toggleStatus(index) {
+    orders[index].status =
+        orders[index].status === "done" ? "pending" : "done";
+
+    localStorage.setItem("orders", JSON.stringify(orders));
+    location.reload();
+}
+
+/* ====== XÓA 1 ĐƠN ====== */
+function deleteOrder(index) {
+    if (!confirm("❌ Xóa đơn này?")) return;
+    orders.splice(index, 1);
+    localStorage.setItem("orders", JSON.stringify(orders));
+    location.reload();
+}
+
+/* ====== XÓA TẤT CẢ ====== */
+function clearAllOrders() {
+    if (!confirm("⚠️ Xóa toàn bộ đơn hàng?")) return;
+    localStorage.removeItem("orders");
+    location.reload();
+}
+
+/* ====== HIỂN THỊ ====== */
+if (orders.length === 0) {
+    ordersDiv.innerHTML = "<p>❌ Chưa có đơn hàng nào.</p>";
+} else {
+    let html = "";
+
+    orders.slice().reverse().forEach((order, i) => {
+        let realIndex = orders.length - 1 - i;
+        let total = 0;
+        let status = order.status || "pending";
+
+        html += `
+        <div class="order-box ${status}">
+            <h3>
+                🧾 Đơn #${realIndex + 1}
+                <span class="status ${status}">
+                    ${status === "done" ? "✅ Đã giao" : "🟡 Chưa giao"}
+                </span>
+            </h3>
+
+            <p><b>👤 Khách:</b> ${order.ten}</p>
+            <p><b>📞 SĐT:</b> ${order.sdt}</p>
+            <p><b>📍 Địa chỉ:</b> ${order.diaChi}</p>
+            <p><b>🕒 Thời gian:</b> ${order.time}</p>
+        `;
+
+        if (order.ghiChu) {
+            html += `<p><b>📝 Ghi chú:</b> ${order.ghiChu}</p>`;
+        }
+
+        html += `<ul>`;
+
+        order.items.forEach(item => {
+            let itemTotal = item.gia * item.qty;
+            total += itemTotal;
+            html += `<li>${item.ten} × ${item.qty} = <b>${formatMoney(itemTotal)}</b></li>`;
+        });
+
+        html += `
+            </ul>
+            <p><b>💰 Tổng tiền:</b> ${formatMoney(total)}</p>
+
+            <button onclick="toggleStatus(${realIndex})">
+                🔁 Đổi trạng thái
+            </button>
+            <button onclick="deleteOrder(${realIndex})">
+                🗑 Xóa đơn
+            </button>
+        </div>
+        `;
+    });
+
+    ordersDiv.innerHTML = html;
+}
+</script>
+
+</body>
+</html>
